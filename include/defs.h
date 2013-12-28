@@ -156,6 +156,7 @@ void            tvinit(void);
 extern struct spinlock tickslock;
 
 // uart.c
+void		uartearlyinit(void);
 void            uartinit(void);
 void            uartintr(void);
 void            uartputc(int);
