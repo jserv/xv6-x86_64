@@ -257,11 +257,16 @@ wait(void)
 void
 scheduler(void)
 {
-  struct proc *p;
+  struct proc *p = 0;
 
   for(;;){
     // Enable interrupts on this processor.
     sti();
+
+    // no runnable processes? (did we hit the end of the table last time?)
+    // if so, wait for irq before trying again.
+    if (p == &ptable.proc[NPROC])
+      hlt();
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
