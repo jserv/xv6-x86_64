@@ -17,3 +17,10 @@ this working branch and any local changes as the original project and to
 hopefully avoid people pestering the original authors about bugs I may introduce
 while poking at their code.
 
+. . .
+
+The biggest change to the code thus far is to organize it into kernel/,
+include/, user/, ulib/, and tools/ subdirectories, and arrange for the
+build to put intermediate object files into kobj/ and uobj/ directories,
+other intermediates into out/ and the filesystem contents into fs/.
+
