@@ -2,6 +2,8 @@
 // Input is from the keyboard or serial port.
 // Output is written to the screen and serial port.
 
+#include <stdarg.h>
+
 #include "types.h"
 #include "defs.h"
 #include "param.h"
@@ -53,9 +55,11 @@ printint(int xx, int base, int sign)
 void
 cprintf(char *fmt, ...)
 {
+  va_list ap;
   int i, c, locking;
-  uint *argp;
   char *s;
+
+  va_start(ap, fmt);
 
   locking = cons.locking;
   if(locking)
@@ -64,7 +68,6 @@ cprintf(char *fmt, ...)
   if (fmt == 0)
     panic("null fmt");
 
-  argp = (uint*)(void*)(&fmt + 1);
   for(i = 0; (c = fmt[i] & 0xff) != 0; i++){
     if(c != '%'){
       consputc(c);
@@ -75,14 +78,14 @@ cprintf(char *fmt, ...)
       break;
     switch(c){
     case 'd':
-      printint(*argp++, 10, 1);
+      printint(va_arg(ap, int), 10, 1);
       break;
     case 'x':
     case 'p':
-      printint(*argp++, 16, 0);
+      printint(va_arg(ap, int), 16, 0);
       break;
     case 's':
-      if((s = (char*)*argp++) == 0)
+      if((s = va_arg(ap, char*)) == 0)
         s = "(null)";
       for(; *s; s++)
         consputc(*s);
