@@ -1,0 +1,70 @@
+
+While porting Xv6 to 64bit Intel/AMD platforms, the goal is to keep changes
+to the codebase as non-intrusive as possible, leaving it as short, clean,
+and readable as it was in the original 32bit version.  When possible,
+#ifdefs will be avoided, and the existing style will be maintained.  Also,
+it should continue to be possible to build, boot, and run Xv6 on 32bit
+platforms from the same codebase.
+
+
+DONE
+ * Quick hack-and-slash modifications to get a buildable 64bit kernel.elf
+   * stubbed out or quickly patched up assembly glue where it didn't build
+   * temporarily turned off int-to-pointer and pointer-to-int warnings
+     to make finding build breakages faster
+   * chase down link errors due to too-large relocations
+ * switch to cross-x86-64 compiler to avoid weirdness from host compiler
+   * https://github.com/travisg/toolchains
+ * make printf() and cprintf() use stdarg.h instead of rolling their own
+   * x86-64's calling conventions for var-args are more complex
+   * notably the first six arguments may be passed in registers
+ * implement 32bit-to-64bit kernel entry glue (entry64.S)
+   * qemu cannot load 64bit ELF kernels
+   * sounds like most linux bootloaders don't support that yet either
+   * implement a 32bit multiboot header and shim
+   * setup an initial identity-mapped and kernel-address-mapped
+     pagetable since you cannot enter 64bit mode without paging on
+
+IN PROGRESS
+ * introduce new type (currently 'uintp' for unsigned integer the size
+   of a pointer) to use in all the places where Xv6 assumes pointers and
+   integers are interchangeable.
+   * almost all warnings squashed
+   * consider a better name. addr_t?
+ * update various assembly stubs (x86.h) for 64bit mode (ldtr,lgdt,etc)
+ * implement 64bit mmu support (vm.c)
+
+TODO
+ * implement 64bit GDT and TSS setup
+ * implement 64bit interrupt support and IDT setup
+ * implement 64bit task switch glue
+ * adjust process entry code for 64bit
+ * adjust syscall assembly for 64bit
+ * verify usermode works
+ * verify usertests work
+ * update boot sector to support multiboot extended header
+   * the ELF header no longer handles the entrypoint
+ * test on real hardware
+ * get 32bit build working again
+
+THINGS TO FIX LATER / NICE TO HAVE
+ * I wish qemu had a "halt-on-exception" mode. Would help early bringup
+ * gdb pukes when qemu switches from 32bit to 64bit mode
+   * this made debugging the mode change entertaining
+   * for now attach gdb after the switch
+ * move userspace entry code to ulib
+
+LESSONS LEARNED / UNRESOLVED 
+ * using 1GB pages in the initial page table did not work
+ * In qemu you can do cheesy debugging by writing bytes to port 0x3f8
+   (the first UART) without any normal UART setup.
+ * Xv6:32 creates kernel mappings (separate copies) in every process's
+   page table, roughly 70k pages worth, consuming about 280MB of ram
+   for page tables.
+
+IMPLEMENTATION NOTES
+ * use "kernel" addressing mode for kernel compilation
+ * kernel virtual address space 0xFFFFFFFF80000000:0xFFFFFFFFFF000000
+ * linear-map first 1GB of RAM to kernel virtual address space
+ * linear-map first 1GB of RAM 1:1 during boot
+
