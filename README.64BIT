@@ -61,6 +61,8 @@ LESSONS LEARNED / UNRESOLVED
  * Xv6:32 creates kernel mappings (separate copies) in every process's
    page table, roughly 70k pages worth, consuming about 280MB of ram
    for page tables.
+ * Xv6:32's trick for cpu-local storage does not work on gcc x86-64
+   - see README.CLS for an exploration of alternate options
 
 IMPLEMENTATION NOTES
  * use "kernel" addressing mode for kernel compilation
