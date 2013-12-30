@@ -143,7 +143,7 @@ entry64high:
   mov %ax, %gs
 
 # setup initial stack
-  mov $0x00010000, %rax
+  mov $0xFFFFFFFF80010000, %rax
   mov %rax, %rsp
 
 # enter main()
