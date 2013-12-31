@@ -10,10 +10,14 @@ struct cpu {
   volatile uint started;       // Has the CPU started?
   int ncli;                    // Depth of pushcli nesting.
   int intena;                  // Were interrupts enabled before pushcli?
-  
+
   // Cpu-local storage variables; see below
+#if X64
+  void *local;
+#else
   struct cpu *cpu;
   struct proc *proc;           // The currently-running process.
+#endif
 };
 
 extern struct cpu cpus[NCPU];
@@ -27,8 +31,13 @@ extern int ncpu;
 // holding those two variables in the local cpu's struct cpu.
 // This is similar to how thread-local variables are implemented
 // in thread libraries such as Linux pthreads.
+#if X64
+extern __thread struct cpu *cpu;
+extern __thread struct proc *proc;
+#else
 extern struct cpu *cpu asm("%gs:0");       // &cpus[cpunum()]
 extern struct proc *proc asm("%gs:4");     // cpus[cpunum()].proc
+#endif
 
 //PAGEBREAK: 17
 // Saved registers for kernel context switches.
@@ -41,6 +50,18 @@ extern struct proc *proc asm("%gs:4");     // cpus[cpunum()].proc
 // The layout of the context matches the layout of the stack in swtch.S
 // at the "Switch stacks" comment. Switch doesn't save eip explicitly,
 // but it is on the stack and allocproc() manipulates it.
+#if X64
+struct context {
+  uintp r15;
+  uintp r14;
+  uintp r13;
+  uintp r12;
+  uintp r11;
+  uintp rbx;
+  uintp rbp;
+  uintp eip; //rip;
+};
+#else
 struct context {
   uintp edi;
   uintp esi;
@@ -48,6 +69,7 @@ struct context {
   uintp ebp;
   uintp eip;
 };
+#endif
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
