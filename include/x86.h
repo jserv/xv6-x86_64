@@ -93,7 +93,7 @@ static inline uintp
 readeflags(void)
 {
   uintp eflags;
-  asm volatile("pushfl; popl %0" : "=r" (eflags));
+  asm volatile("pushf; pop %0" : "=r" (eflags));
   return eflags;
 }
 
@@ -138,14 +138,14 @@ static inline uintp
 rcr2(void)
 {
   uintp val;
-  asm volatile("movl %%cr2,%0" : "=r" (val));
+  asm volatile("mov %%cr2,%0" : "=r" (val));
   return val;
 }
 
 static inline void
 lcr3(uintp val) 
 {
-  asm volatile("movl %0,%%cr3" : : "r" (val));
+  asm volatile("mov %0,%%cr3" : : "r" (val));
 }
 
 //PAGEBREAK: 36
