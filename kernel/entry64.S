@@ -149,6 +149,17 @@ entry64high:
 # enter main()
   jmp main
 
+.global __deadloop
+__deadloop:
 # we should never return here...
   jmp .
+
+.global wrmsr
+wrmsr:
+  mov %rdi, %rcx     # arg0 -> msrnum
+  mov %rsi, %rax     # val.low -> eax
+  shr $32, %rsi
+  mov %rsi, %rdx     # val.high -> edx
+  wrmsr
+  retq
 
