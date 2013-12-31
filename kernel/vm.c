@@ -68,13 +68,13 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
 // physical addresses starting at pa. va and size might not
 // be page-aligned.
 static int
-mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
+mappages(pde_t *pgdir, void *va, uintp size, uintp pa, int perm)
 {
   char *a, *last;
   pte_t *pte;
   
-  a = (char*)PGROUNDDOWN((uint)va);
-  last = (char*)PGROUNDDOWN(((uint)va) + size - 1);
+  a = (char*)PGROUNDDOWN((uintp)va);
+  last = (char*)PGROUNDDOWN(((uintp)va) + size - 1);
   for(;;){
     if((pte = walkpgdir(pgdir, a, 1)) == 0)
       return -1;
@@ -114,8 +114,8 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 // every process's page table.
 static struct kmap {
   void *virt;
-  uint phys_start;
-  uint phys_end;
+  uintp phys_start;
+  uintp phys_end;
   int perm;
 } kmap[] = {
  { (void*)KERNBASE, 0,             EXTMEM,    PTE_W}, // I/O space
@@ -168,7 +168,7 @@ switchuvm(struct proc *p)
   cpu->gdt[SEG_TSS] = SEG16(STS_T32A, &cpu->ts, sizeof(cpu->ts)-1, 0);
   cpu->gdt[SEG_TSS].s = 0;
   cpu->ts.ss0 = SEG_KDATA << 3;
-  cpu->ts.esp0 = (uint)proc->kstack + KSTACKSIZE;
+  cpu->ts.esp0 = (uintp)proc->kstack + KSTACKSIZE;
   ltr(SEG_TSS << 3);
   if(p->pgdir == 0)
     panic("switchuvm: no pgdir");
@@ -199,7 +199,7 @@ loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz)
   uint i, pa, n;
   pte_t *pte;
 
-  if((uint) addr % PGSIZE != 0)
+  if((uintp) addr % PGSIZE != 0)
     panic("loaduvm: addr must be page aligned");
   for(i = 0; i < sz; i += PGSIZE){
     if((pte = walkpgdir(pgdir, addr+i, 0)) == 0)
@@ -221,7 +221,7 @@ int
 allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 {
   char *mem;
-  uint a;
+  uintp a;
 
   if(newsz >= KERNBASE)
     return 0;
@@ -247,10 +247,10 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 // need to be less than oldsz.  oldsz can be larger than the actual
 // process size.  Returns the new process size.
 int
-deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
+deallocuvm(pde_t *pgdir, uintp oldsz, uintp newsz)
 {
   pte_t *pte;
-  uint a, pa;
+  uintp a, pa;
 
   if(newsz >= oldsz)
     return oldsz;
@@ -311,7 +311,7 @@ copyuvm(pde_t *pgdir, uint sz)
 {
   pde_t *d;
   pte_t *pte;
-  uint pa, i, flags;
+  uintp pa, i, flags;
   char *mem;
 
   if((d = setupkvm()) == 0)
@@ -358,7 +358,7 @@ int
 copyout(pde_t *pgdir, uint va, void *p, uint len)
 {
   char *buf, *pa0;
-  uint n, va0;
+  uintp n, va0;
 
   buf = (char*)p;
   while(len > 0){

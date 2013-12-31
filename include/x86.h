@@ -65,9 +65,8 @@ lgdt(struct segdesc *p, int size)
   volatile ushort pd[3];
 
   pd[0] = size-1;
-  pd[1] = (uint)p;
-  pd[2] = (uint)p >> 16;
-
+  pd[1] = (uintp)p;
+  pd[2] = (uintp)p >> 16;
   asm volatile("lgdt (%0)" : : "r" (pd));
 }
 
@@ -79,9 +78,8 @@ lidt(struct gatedesc *p, int size)
   volatile ushort pd[3];
 
   pd[0] = size-1;
-  pd[1] = (uint)p;
-  pd[2] = (uint)p >> 16;
-
+  pd[1] = (uintp)p;
+  pd[2] = (uintp)p >> 16;
   asm volatile("lidt (%0)" : : "r" (pd));
 }
 
@@ -91,10 +89,10 @@ ltr(ushort sel)
   asm volatile("ltr %0" : : "r" (sel));
 }
 
-static inline uint
+static inline uintp
 readeflags(void)
 {
-  uint eflags;
+  uintp eflags;
   asm volatile("pushfl; popl %0" : "=r" (eflags));
   return eflags;
 }
@@ -124,7 +122,7 @@ hlt(void)
 }
 
 static inline uint
-xchg(volatile uint *addr, uint newval)
+xchg(volatile uint *addr, uintp newval)
 {
   uint result;
   
@@ -136,16 +134,16 @@ xchg(volatile uint *addr, uint newval)
   return result;
 }
 
-static inline uint
+static inline uintp
 rcr2(void)
 {
-  uint val;
+  uintp val;
   asm volatile("movl %%cr2,%0" : "=r" (val));
   return val;
 }
 
 static inline void
-lcr3(uint val) 
+lcr3(uintp val) 
 {
   asm volatile("movl %0,%%cr3" : : "r" (val));
 }

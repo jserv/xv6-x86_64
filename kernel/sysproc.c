@@ -41,13 +41,13 @@ sys_getpid(void)
   return proc->pid;
 }
 
-int
+uintp
 sys_sbrk(void)
 {
-  int addr;
-  int n;
+  uintp addr;
+  uintp n;
 
-  if(argint(0, &n) < 0)
+  if(arguintp(0, &n) < 0)
     return -1;
   addr = proc->sz;
   if(growproc(n) < 0)

@@ -46,7 +46,7 @@ void
 freerange(void *vstart, void *vend)
 {
   char *p;
-  p = (char*)PGROUNDUP((uint)vstart);
+  p = (char*)PGROUNDUP((uintp)vstart);
   for(; p + PGSIZE <= (char*)vend; p += PGSIZE)
     kfree(p);
 }
@@ -61,7 +61,7 @@ kfree(char *v)
 {
   struct run *r;
 
-  if((uint)v % PGSIZE || v < end || v2p(v) >= PHYSTOP)
+  if((uintp)v % PGSIZE || v < end || v2p(v) >= PHYSTOP)
     panic("kfree");
 
   // Fill with junk to catch dangling refs.

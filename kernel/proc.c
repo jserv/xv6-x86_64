@@ -62,13 +62,13 @@ found:
   
   // Set up new context to start executing at forkret,
   // which returns to trapret.
-  sp -= 4;
-  *(uint*)sp = (uint)trapret;
+  sp -= sizeof(uintp);
+  *(uintp*)sp = (uintp)trapret;
 
   sp -= sizeof *p->context;
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
-  p->context->eip = (uint)forkret;
+  p->context->eip = (uintp)forkret;
 
   return p;
 }
@@ -85,7 +85,7 @@ userinit(void)
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
     panic("userinit: out of memory?");
-  inituvm(p->pgdir, _binary_out_initcode_start, (int)_binary_out_initcode_size);
+  inituvm(p->pgdir, _binary_out_initcode_start, (uintp)_binary_out_initcode_size);
   p->sz = PGSIZE;
   memset(p->tf, 0, sizeof(*p->tf));
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;

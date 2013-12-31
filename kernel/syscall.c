@@ -15,11 +15,20 @@
 
 // Fetch the int at addr from the current process.
 int
-fetchint(uint addr, int *ip)
+fetchint(uintp addr, int *ip)
 {
-  if(addr >= proc->sz || addr+4 > proc->sz)
+  if(addr >= proc->sz || addr+sizeof(int) > proc->sz)
     return -1;
   *ip = *(int*)(addr);
+  return 0;
+}
+
+int
+fetchuintp(uintp addr, uintp *ip)
+{
+  if(addr >= proc->sz || addr+sizeof(uintp) > proc->sz)
+    return -1;
+  *ip = *(uintp*)(addr);
   return 0;
 }
 
@@ -27,7 +36,7 @@ fetchint(uint addr, int *ip)
 // Doesn't actually copy the string - just sets *pp to point at it.
 // Returns length of string, not including nul.
 int
-fetchstr(uint addr, char **pp)
+fetchstr(uintp addr, char **pp)
 {
   char *s, *ep;
 
@@ -48,17 +57,23 @@ argint(int n, int *ip)
   return fetchint(proc->tf->esp + 4 + 4*n, ip);
 }
 
+int
+arguintp(int n, uintp *ip)
+{
+  return fetchuintp(proc->tf->esp + sizeof(uintp) + sizeof(uintp)*n, ip);
+}
+
 // Fetch the nth word-sized system call argument as a pointer
 // to a block of memory of size n bytes.  Check that the pointer
 // lies within the process address space.
 int
 argptr(int n, char **pp, int size)
 {
-  int i;
-  
-  if(argint(n, &i) < 0)
+  uintp i;
+
+  if(arguintp(n, &i) < 0)
     return -1;
-  if((uint)i >= proc->sz || (uint)i+size > proc->sz)
+  if(i >= proc->sz || i+size > proc->sz)
     return -1;
   *pp = (char*)i;
   return 0;
@@ -71,8 +86,8 @@ argptr(int n, char **pp, int size)
 int
 argstr(int n, char **pp)
 {
-  int addr;
-  if(argint(n, &addr) < 0)
+  uintp addr;
+  if(arguintp(n, &addr) < 0)
     return -1;
   return fetchstr(addr, pp);
 }
