@@ -25,10 +25,18 @@ static struct {
   int locking;
 } cons;
 
+static char digits[] = "0123456789abcdef";
+
+static void
+printptr(uintp x) {
+  int i;
+  for (i = 0; i < (sizeof(uintp) * 2); i++, x <<= 4)
+    consputc(digits[x >> (sizeof(uintp) * 8 - 4)]);
+}
+
 static void
 printint(int xx, int base, int sign)
 {
-  static char digits[] = "0123456789abcdef";
   char buf[16];
   int i;
   uint x;
@@ -81,8 +89,10 @@ cprintf(char *fmt, ...)
       printint(va_arg(ap, int), 10, 1);
       break;
     case 'x':
-    case 'p':
       printint(va_arg(ap, int), 16, 0);
+      break;
+    case 'p':
+      printptr(va_arg(ap, uintp));
       break;
     case 's':
       if((s = va_arg(ap, char*)) == 0)
