@@ -24,6 +24,8 @@ DONE
    * implement a 32bit multiboot header and shim
    * setup an initial identity-mapped and kernel-address-mapped
      pagetable since you cannot enter 64bit mode without paging on
+ * adjust syscall assembly for 64bit
+ * implement 64bit task switch glue
 
 IN PROGRESS
  * introduce new type (currently 'uintp' for unsigned integer the size
@@ -37,9 +39,7 @@ IN PROGRESS
 TODO
  * implement 64bit GDT and TSS setup
  * implement 64bit interrupt support and IDT setup
- * implement 64bit task switch glue
  * adjust process entry code for 64bit
- * adjust syscall assembly for 64bit
  * verify usermode works
  * verify usertests work
  * update boot sector to support multiboot extended header
@@ -63,10 +63,24 @@ LESSONS LEARNED / UNRESOLVED
    for page tables.
  * Xv6:32's trick for cpu-local storage does not work on gcc x86-64
    - see README.CLS for an exploration of alternate options
+ * Not sure why you're double/triple-faulting?
+   drop some instrumentation code in qemu/target-i386/seg_helper.c's
+   do_interrupt64() -- this is where all the validation on irq/trap
+   entry happens
 
 IMPLEMENTATION NOTES
  * use "kernel" addressing mode for kernel compilation
  * kernel virtual address space 0xFFFFFFFF80000000:0xFFFFFFFFFF000000
  * linear-map first 1GB of RAM to kernel virtual address space
  * linear-map first 1GB of RAM 1:1 during boot
+ * x64 has 4 levels of page tables instead of just 2
+   * continue to return a 2nd-level page table from setupkvm()
+     but actually create 4th, 3rd, and 2nd level tables
+   * use the top two entries of the 2nd level table for backpointers
+     to the 4th and 3rd level tables so that switchkvm(), switchuvm(),
+     and freevm() can get at these when needed
+   * use the top entry of the 4th level table to point to a shared
+     (among all processes) 3rd level table which handles the kernel
+     memory mapping (which is the same everywhere)
+   * userland will have 4GB - 8KB address space
 
