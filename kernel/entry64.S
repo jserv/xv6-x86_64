@@ -135,8 +135,6 @@ entry64high:
 # ensure data segment registers are sane
   xor %rax, %rax
   mov %ax, %ss
-
-  mov $0x10, %rax
   mov %ax, %ds
   mov %ax, %es
   mov %ax, %fs
