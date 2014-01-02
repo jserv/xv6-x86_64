@@ -26,21 +26,24 @@ DONE
      pagetable since you cannot enter 64bit mode without paging on
  * adjust syscall assembly for 64bit
  * implement 64bit task switch glue
-
-IN PROGRESS
  * introduce new type (currently 'uintp' for unsigned integer the size
    of a pointer) to use in all the places where Xv6 assumes pointers and
    integers are interchangeable.
    * almost all warnings squashed
    * consider a better name. addr_t?
- * update various assembly stubs (x86.h) for 64bit mode (ldtr,lgdt,etc)
- * implement 64bit mmu support (vm.c)
-
-TODO
  * implement 64bit GDT and TSS setup
  * implement 64bit interrupt support and IDT setup
  * adjust process entry code for 64bit
+   * 64bit pointers and ABI (pass args in regs)
+ * implement 64bit mmu support (vm64.c)
+
+IN PROGRESS
  * verify usermode works
+ * tidy up exec() for 64bit (argument passing, stack alignment)
+
+TODO
+ * turn back on pre-emption 
+ * enable SMP and verify it
  * verify usertests work
  * update boot sector to support multiboot extended header
    * the ELF header no longer handles the entrypoint
