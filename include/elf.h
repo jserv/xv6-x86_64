@@ -9,9 +9,9 @@ struct elfhdr {
   ushort type;
   ushort machine;
   uint version;
-  uint entry;
-  uint phoff;
-  uint shoff;
+  uintp entry;
+  uintp phoff;
+  uintp shoff;
   uint flags;
   ushort ehsize;
   ushort phentsize;
@@ -22,6 +22,18 @@ struct elfhdr {
 };
 
 // Program section header
+#if X64
+struct proghdr {
+  uint32 type;
+  uint32 flags;
+  uint64 off;
+  uint64 vaddr;
+  uint64 paddr;
+  uint64 filesz;
+  uint64 memsz;
+  uint64 align;
+};
+#else
 struct proghdr {
   uint type;
   uint off;
@@ -32,6 +44,7 @@ struct proghdr {
   uint flags;
   uint align;
 };
+#endif
 
 // Values for Proghdr type
 #define ELF_PROG_LOAD           1
