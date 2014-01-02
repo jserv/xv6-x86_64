@@ -119,7 +119,7 @@ void
 panic(char *s)
 {
   int i;
-  uint pcs[10];
+  uintp pcs[10];
   
   cli();
   cons.locking = 0;
