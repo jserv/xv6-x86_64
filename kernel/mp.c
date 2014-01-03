@@ -109,7 +109,7 @@ mpinit(void)
   if((conf = mpconfig(&mp)) == 0)
     return;
   ismp = 1;
-  lapic = (uint*)conf->lapicaddr;
+  lapic = IO2V((uintp)conf->lapicaddr);
   for(p=(uchar*)(conf+1), e=(uchar*)conf+conf->length; p<e; ){
     switch(*p){
     case MPPROC:
