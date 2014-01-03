@@ -25,10 +25,15 @@
 .globl multiboot_header
 multiboot_header:
   #define magic 0x1badb002
-  #define flags 0
+  #define flags 0x10000
   .long magic
   .long flags
   .long (-magic-flags)
+  .long V2P_WO(multiboot_header)
+  .long V2P_WO(multiboot_header)
+  .long V2P_WO(edata)
+  .long V2P_WO(end) 
+  .long _start
 
 # By convention, the _start symbol specifies the ELF entry point.
 # Since we haven't set up virtual memory yet, our entry point is
