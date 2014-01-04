@@ -12,7 +12,7 @@ endif
 
 OPT ?= -O0
 
-OBJS = \
+OBJS := \
 	kobj/bio.o\
 	kobj/console.o\
 	kobj/exec.o\
@@ -42,6 +42,13 @@ OBJS = \
 	kobj/vectors.o\
 	kobj/vm.o\
 	$(XOBJS)
+
+ifneq ("$(MEMFS)","")
+# build filesystem image in to kernel and use memory-ide-device
+# instead of mounting the filesystem on ide1
+OBJS := $(filter-out kobj/ide.o,$(OBJS)) kobj/memide.o
+FSIMAGE := fs.img
+endif
 
 # Cross-compiling (e.g., on Mac OS X)
 #TOOLPREFIX = i386-jos-elf-
@@ -150,25 +157,10 @@ out/initcode: $(INITCODESRC)
 
 ENTRYCODE = kobj/entry$(BITS).o
 LINKSCRIPT = kernel/kernel$(BITS).ld
-out/kernel.elf: $(OBJS) $(ENTRYCODE) out/entryother out/initcode $(LINKSCRIPT)
-	$(LD) $(LDFLAGS) -T $(LINKSCRIPT) -o out/kernel.elf $(ENTRYCODE) $(OBJS) -b binary out/initcode out/entryother
+out/kernel.elf: $(OBJS) $(ENTRYCODE) out/entryother out/initcode $(LINKSCRIPT) $(FSIMAGE)
+	$(LD) $(LDFLAGS) -T $(LINKSCRIPT) -o out/kernel.elf $(ENTRYCODE) $(OBJS) -b binary out/initcode out/entryother $(FSIMAGE)
 	$(OBJDUMP) -S out/kernel.elf > out/kernel.asm
 	$(OBJDUMP) -t out/kernel.elf | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > out/kernel.sym
-
-# kernelmemfs is a copy of kernel that maintains the
-# disk image in memory instead of writing to a disk.
-# This is not so useful for testing persistent storage or
-# exploring disk buffering implementations, but it is
-# great for testing the kernel on real hardware without
-# needing a scratch disk.
-MEMFSOBJS = $(filter-out kobj/ide.o,$(OBJS)) kobj/memide.o
-out/kernelmemfs.elf: $(MEMFSOBJS) $(ENTRYCODE) out/entryother out/initcode fs.img $(LINKSCRIPT)
-	$(LD) $(LDFLAGS) -T $(LINKSCRIPT) -o out/kernelmemfs.elf $(ENTRYCODE) $(MEMFSOBJS) -b binary out/initcode out/entryother fs.img
-	$(OBJDUMP) -S out/kernelmemfs.elf > kernelmemfs.asm
-	$(OBJDUMP) -t out/kernelmemfs.elf | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > kernelmemfs.sym
-
-tags: $(OBJS) entryother.S _init
-	etags *.S *.c
 
 MKVECTORS = tools/vectors$(BITS).pl
 kernel/vectors.S: $(MKVECTORS)
