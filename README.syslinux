@@ -1,0 +1,35 @@
+
+# create a 513MB disk with 512MB partition 1
+% truncate -s 513M hdd
+% fdisk hdd
+n / p / 1 / <enter> / <enter>
+a / 1
+w
+
+# configure mtools to see the first partition on that image
+% cat <<EOF > mtools.rc
+drive s:
+  file="hdd"
+  offset=1048576
+  cylinders=512 heads=32 sectors=32
+  mformat_only
+EOF
+% export MTOOLSRC=mtools.rc
+
+% mformat s:
+
+# install and configure syslinux
+% dd if=/usr/lib/syslinux/mbr.bin of=hdd bs=440 count=1 conv=notrunc
+% syslinux -t 1048576 -i hdd
+% mmd s:syslinux
+% mcopy -o /usr/lib/syslinux/mboot.c32 s:syslinux
+% echo 'DEFAULT mboot.c32 /kernel.elf' > syslinux.cfg
+% mcopy -o syslinux.cfg s:syslinux/syslinux.cfg
+
+# install xv6 
+% mcopy -o out/kernel.elf s:kernel.elf
+
+# boot
+% qemu-system-i386 hdd -net none
+
+
