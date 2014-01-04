@@ -1452,6 +1452,7 @@ void
 validateint(int *p)
 {
   int res;
+#ifndef X64
   asm("mov %%esp, %%ebx\n\t"
       "mov %3, %%esp\n\t"
       "int %2\n\t"
@@ -1459,6 +1460,7 @@ validateint(int *p)
       "=a" (res) :
       "a" (SYS_sleep), "n" (T_SYSCALL), "c" (p) :
       "ebx");
+#endif
 }
 
 void
