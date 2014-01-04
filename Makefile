@@ -1,3 +1,17 @@
+-include local.mk
+
+ifneq ("$(X64)","")
+BITS = 64
+XOBJS = kobj/vm64.o
+XFLAGS = -m64 -DX64 -mcmodel=kernel -mtls-direct-seg-refs -mno-red-zone
+LDFLAGS = -m elf_x86_64 -nodefaultlibs
+else
+XFLAGS = -m32
+LDFLAGS = -m elf_i386 -nodefaultlibs
+endif
+
+OPT ?= -O0
+
 OBJS = \
 	kobj/bio.o\
 	kobj/console.o\
@@ -17,22 +31,23 @@ OBJS = \
 	kobj/proc.o\
 	kobj/spinlock.o\
 	kobj/string.o\
-	kobj/swtch.o\
+	kobj/swtch$(BITS).o\
 	kobj/syscall.o\
 	kobj/sysfile.o\
 	kobj/sysproc.o\
 	kobj/timer.o\
-	kobj/trapasm.o\
+	kobj/trapasm$(BITS).o\
 	kobj/trap.o\
 	kobj/uart.o\
 	kobj/vectors.o\
 	kobj/vm.o\
+	$(XOBJS)
 
 # Cross-compiling (e.g., on Mac OS X)
 #TOOLPREFIX = i386-jos-elf-
 
 # Using native tools (e.g., on X86 Linux)
-#TOOLPREFIX = 
+#TOOLPREFIX =
 
 # Try to infer the correct TOOLPREFIX if not set
 ifndef TOOLPREFIX
@@ -67,22 +82,15 @@ QEMU = $(shell if which qemu > /dev/null; \
 	echo "***" 1>&2; exit 1)
 endif
 
-XFLAGS = -I/usr/include/x86_64-linux-gnu
-
 CC = $(TOOLPREFIX)gcc
 AS = $(TOOLPREFIX)gas
 LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
-#CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer
-CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer
+CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -Wall -MD -ggdb -fno-omit-frame-pointer
+CFLAGS += -ffreestanding -fno-common -nostdlib -Iinclude -gdwarf-2 $(XFLAGS) $(OPT)
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
-CFLAGS += -Iinclude $(XFLAGS)
-ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
-ASFLAGS += -Iinclude $(XFLAGS)
-
-# FreeBSD ld wants ``elf_i386_fbsd''
-LDFLAGS += -m $(shell $(LD) -V | grep elf_i386 2>/dev/null)
+ASFLAGS = -gdwarf-2 -Wa,-divide -Iinclude $(XFLAGS)
 
 xv6.img: out/bootblock out/kernel.elf fs.img
 	dd if=/dev/zero of=xv6.img count=10000
@@ -118,9 +126,9 @@ uobj/%.o: ulib/%.S
 
 out/bootblock: kernel/bootasm.S kernel/bootmain.c
 	@mkdir -p out
-	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -o out/bootmain.o -c kernel/bootmain.c
-	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -o out/bootasm.o -c kernel/bootasm.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00 -o out/bootblock.o out/bootasm.o out/bootmain.o
+	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -Iinclude -O -o out/bootmain.o -c kernel/bootmain.c
+	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -Iinclude -o out/bootasm.o -c kernel/bootasm.S
+	$(LD) -m elf_i386 -nodefaultlibs -N -e start -Ttext 0x7C00 -o out/bootblock.o out/bootasm.o out/bootmain.o
 	$(OBJDUMP) -S out/bootblock.o > out/bootblock.asm
 	$(OBJCOPY) -S -O binary -j .text out/bootblock.o out/bootblock
 	tools/sign.pl out/bootblock
@@ -132,15 +140,18 @@ out/entryother: kernel/entryother.S
 	$(OBJCOPY) -S -O binary -j .text out/bootblockother.o out/entryother
 	$(OBJDUMP) -S out/bootblockother.o > out/entryother.asm
 
-out/initcode: kernel/initcode.S
+INITCODESRC = kernel/initcode$(BITS).S
+out/initcode: $(INITCODESRC)
 	@mkdir -p out
-	$(CC) $(CFLAGS) -nostdinc -I. -o out/initcode.o -c kernel/initcode.S
+	$(CC) $(CFLAGS) -nostdinc -I. -o out/initcode.o -c $(INITCODESRC)
 	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o out/initcode.out out/initcode.o
 	$(OBJCOPY) -S -O binary out/initcode.out out/initcode
 	$(OBJDUMP) -S out/initcode.o > out/initcode.asm
 
-out/kernel.elf: $(OBJS) kernel/entry.o out/entryother out/initcode kernel/kernel.ld
-	$(LD) $(LDFLAGS) -T kernel/kernel.ld -o out/kernel.elf kernel/entry.o $(OBJS) -b binary out/initcode out/entryother
+ENTRYCODE = kobj/entry$(BITS).o
+LINKSCRIPT = kernel/kernel$(BITS).ld
+out/kernel.elf: $(OBJS) $(ENTRYCODE) out/entryother out/initcode $(LINKSCRIPT)
+	$(LD) $(LDFLAGS) -T $(LINKSCRIPT) -o out/kernel.elf $(ENTRYCODE) $(OBJS) -b binary out/initcode out/entryother
 	$(OBJDUMP) -S out/kernel.elf > out/kernel.asm
 	$(OBJDUMP) -t out/kernel.elf | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > out/kernel.sym
 
@@ -150,17 +161,18 @@ out/kernel.elf: $(OBJS) kernel/entry.o out/entryother out/initcode kernel/kernel
 # exploring disk buffering implementations, but it is
 # great for testing the kernel on real hardware without
 # needing a scratch disk.
-MEMFSOBJS = $(filter-out kernel/ide.o,$(OBJS)) kernel/memide.o
-out/kernelmemfs.elf: $(MEMFSOBJS) kernel/entry.o out/entryother out/initcode fs.img kernel/kernel.ld
-	$(LD) $(LDFLAGS) -T kernel/kernel.ld -o out/kernelmemfs.elf kernel/entry.o  $(MEMFSOBJS) -b binary out/initcode out/entryother fs.img
+MEMFSOBJS = $(filter-out kobj/ide.o,$(OBJS)) kobj/memide.o
+out/kernelmemfs.elf: $(MEMFSOBJS) $(ENTRYCODE) out/entryother out/initcode fs.img $(LINKSCRIPT)
+	$(LD) $(LDFLAGS) -T $(LINKSCRIPT) -o out/kernelmemfs.elf $(ENTRYCODE) $(MEMFSOBJS) -b binary out/initcode out/entryother fs.img
 	$(OBJDUMP) -S out/kernelmemfs.elf > kernelmemfs.asm
 	$(OBJDUMP) -t out/kernelmemfs.elf | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > kernelmemfs.sym
 
 tags: $(OBJS) entryother.S _init
 	etags *.S *.c
 
-kernel/vectors.S: tools/vectors.pl
-	perl tools/vectors.pl > kernel/vectors.S
+MKVECTORS = tools/vectors$(BITS).pl
+kernel/vectors.S: $(MKVECTORS)
+	perl $(MKVECTORS) > kernel/vectors.S
 
 ULIB = uobj/ulib.o uobj/usys.o uobj/printf.o uobj/umalloc.o
 
