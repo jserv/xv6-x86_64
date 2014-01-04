@@ -23,7 +23,7 @@ EOF
 % syslinux -t 1048576 -i hdd
 % mmd s:syslinux
 % mcopy -o /usr/lib/syslinux/mboot.c32 s:syslinux
-% echo 'DEFAULT mboot.c32 /kernel.elf' > syslinux.cfg
+% echo 'DEFAULT mboot.c32 -aout /kernel.elf' > syslinux.cfg
 % mcopy -o syslinux.cfg s:syslinux/syslinux.cfg
 
 # install xv6 
