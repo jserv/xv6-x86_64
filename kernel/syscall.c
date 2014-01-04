@@ -50,6 +50,35 @@ fetchstr(uintp addr, char **pp)
   return -1;
 }
 
+#if X64
+// arguments passed in registers on x64
+static uintp
+fetcharg(int n)
+{
+  switch (n) {
+  case 0: return proc->tf->rdi;
+  case 1: return proc->tf->rsi;
+  case 2: return proc->tf->rdx;
+  case 3: return proc->tf->rcx;
+  case 4: return proc->tf->r8;
+  case 5: return proc->tf->r9;
+  }
+}
+
+int
+argint(int n, int *ip)
+{
+  *ip = fetcharg(n);
+  return 0;
+}
+
+int
+arguintp(int n, uintp *ip)
+{
+  *ip = fetcharg(n);
+  return 0;
+}
+#else
 // Fetch the nth 32-bit system call argument.
 int
 argint(int n, int *ip)
@@ -62,6 +91,7 @@ arguintp(int n, uintp *ip)
 {
   return fetchuintp(proc->tf->esp + sizeof(uintp) + sizeof(uintp)*n, ip);
 }
+#endif
 
 // Fetch the nth word-sized system call argument as a pointer
 // to a block of memory of size n bytes.  Check that the pointer
