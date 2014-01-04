@@ -118,19 +118,12 @@ gdt64_end:
 .align 16
 .code64
 entry64low:
-  movw $0x3f8, %dx
-  movb $'6', %al
-  out %al, (%dx)
-
   movq $entry64high, %rax
   jmp *%rax
 
 .global _start
 _start:
 entry64high:
-  movw $0x3f8, %dx
-  movb $'4', %al
-  out %al, (%dx)
 
 # ensure data segment registers are sane
   xor %rax, %rax
