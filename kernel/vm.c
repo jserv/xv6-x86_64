@@ -11,6 +11,7 @@ extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 struct segdesc gdt[NSEGS];
 
+#ifndef X64
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.
 void
@@ -38,6 +39,7 @@ seginit(void)
   cpu = c;
   proc = 0;
 }
+#endif
 
 // Return the address of the PTE in page table pgdir
 // that corresponds to virtual address va.  If alloc!=0,
@@ -89,6 +91,7 @@ mappages(pde_t *pgdir, void *va, uintp size, uintp pa, int perm)
   return 0;
 }
 
+#ifndef X64
 // There is one page table per process, plus one that's used when
 // a CPU is not running any process (kpgdir). The kernel uses the
 // current process's page table during system calls and interrupts;
@@ -175,6 +178,7 @@ switchuvm(struct proc *p)
   lcr3(v2p(p->pgdir));  // switch to new address space
   popcli();
 }
+#endif
 
 // Load the initcode into address 0 of pgdir.
 // sz must be less than a page.
@@ -278,11 +282,10 @@ void
 freevm(pde_t *pgdir)
 {
   uint i;
-
   if(pgdir == 0)
     panic("freevm: no pgdir");
-  deallocuvm(pgdir, KERNBASE, 0);
-  for(i = 0; i < NPDENTRIES; i++){
+  deallocuvm(pgdir, 0x3fa00000, 0);
+  for(i = 0; i < NPDENTRIES-2; i++){
     if(pgdir[i] & PTE_P){
       char * v = p2v(PTE_ADDR(pgdir[i]));
       kfree(v);

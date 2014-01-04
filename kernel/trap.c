@@ -14,6 +14,7 @@ extern uintp vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
 uint ticks;
 
+#ifndef X64
 void
 tvinit(void)
 {
@@ -31,6 +32,7 @@ idtinit(void)
 {
   lidt(idt, sizeof(idt));
 }
+#endif
 
 //PAGEBREAK: 41
 void
