@@ -90,8 +90,10 @@ userinit(void)
   memset(p->tf, 0, sizeof(*p->tf));
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
   p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
+#ifndef X64
   p->tf->es = p->tf->ds;
   p->tf->ss = p->tf->ds;
+#endif
   p->tf->eflags = FL_IF;
   p->tf->esp = PGSIZE;
   p->tf->eip = 0;  // beginning of initcode.S
@@ -431,6 +433,7 @@ kill(int pid)
 void
 procdump(void)
 {
+#ifndef X64
   static char *states[] = {
   [UNUSED]    "unused",
   [EMBRYO]    "embryo",
@@ -459,6 +462,7 @@ procdump(void)
     }
     cprintf("\n");
   }
+#endif
 }
 
 
