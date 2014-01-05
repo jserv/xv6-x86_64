@@ -59,7 +59,7 @@ struct context {
   uintp r12;
   uintp r11;
   uintp rbx;
-  uintp rbp;
+  uintp ebp; //rbp
   uintp eip; //rip;
 };
 #else
