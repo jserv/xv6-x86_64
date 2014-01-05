@@ -75,6 +75,14 @@ ptbl_loop:
   dec %ecx
   jnz ptbl_loop
 
+# Clear ebx for initial processor boot.
+# When secondary processors boot, they'll call through
+# entry32mp (from entryother), but with a nonzero ebx.
+# We'll reuse these bootstrap pagetables and GDT.
+  xor %ebx, %ebx
+
+.global entry32mp
+entry32mp:
 # CR3 -> 0x1000 (P4ML)
   mov $0x1000, %eax
   mov %eax, %cr3
@@ -133,6 +141,10 @@ entry64high:
   mov %ax, %fs
   mov %ax, %gs
 
+# check to see if we're booting a secondary core
+  test %ebx, %ebx
+  jnz entry64mp
+
 # setup initial stack
   mov $0xFFFFFFFF80010000, %rax
   mov %rax, %rsp
@@ -144,6 +156,12 @@ entry64high:
 __deadloop:
 # we should never return here...
   jmp .
+
+entry64mp:
+# obtain kstack from data block before entryother
+  mov $0x7000, %rax
+  mov -16(%rax), %rsp
+  jmp mpenter
 
 .global wrmsr
 wrmsr:

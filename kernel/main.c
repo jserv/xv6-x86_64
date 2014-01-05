@@ -44,7 +44,7 @@ main(void)
 }
 
 // Other CPUs jump here from entryother.S.
-static void
+void
 mpenter(void)
 {
   switchkvm(); 
@@ -64,6 +64,7 @@ mpmain(void)
 }
 
 pde_t entrypgdir[];  // For entry.S
+void entry32mp(void);
 
 // Start the non-boot (AP) processors.
 static void
@@ -88,9 +89,15 @@ startothers(void)
     // pgdir to use. We cannot use kpgdir yet, because the AP processor
     // is running in low  memory, so we use entrypgdir for the APs too.
     stack = kalloc();
+#if X64
+    *(uint32*)(code-4) = 0x8000; // just enough stack to get us to entry64mp
+    *(uint32*)(code-8) = v2p(entry32mp);
+    *(uint64*)(code-16) = (uint64) (stack + KSTACKSIZE);
+#else
     *(void**)(code-4) = stack + KSTACKSIZE;
     *(void**)(code-8) = mpenter;
     *(int**)(code-12) = (void *) v2p(entrypgdir);
+#endif
 
     lapicstartap(c->id, v2p(code));
 
