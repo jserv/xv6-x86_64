@@ -433,7 +433,6 @@ kill(int pid)
 void
 procdump(void)
 {
-#ifndef X64
   static char *states[] = {
   [UNUSED]    "unused",
   [EMBRYO]    "embryo",
@@ -445,7 +444,7 @@ procdump(void)
   int i;
   struct proc *p;
   char *state;
-  uint pc[10];
+  uintp pc[10];
   
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
@@ -456,13 +455,12 @@ procdump(void)
       state = "???";
     cprintf("%d %s %s", p->pid, state, p->name);
     if(p->state == SLEEPING){
-      getcallerpcs((uint*)p->context->ebp+2, pc);
+      getstackpcs((uintp*)p->context->ebp, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
         cprintf(" %p", pc[i]);
     }
     cprintf("\n");
   }
-#endif
 }
 
 
