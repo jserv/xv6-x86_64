@@ -139,9 +139,6 @@ mpinit(void)
       ismp = 0;
     }
   }
-#if X64
-ismp = 0; // disable for now
-#endif
   if(!ismp){
     // Didn't like what we found; fall back to no MP.
     ncpu = 1;
