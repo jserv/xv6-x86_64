@@ -205,6 +205,9 @@ consoleintr(int (*getc)(void))
   acquire(&input.lock);
   while((c = getc()) >= 0){
     switch(c){
+    case C('Z'): // reboot
+      lidt(0,0);
+      break;
     case C('P'):  // Process listing.
       procdump();
       break;
