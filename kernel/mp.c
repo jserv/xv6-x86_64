@@ -114,13 +114,11 @@ mpinit(void)
     switch(*p){
     case MPPROC:
       proc = (struct mpproc*)p;
-      if(ncpu != proc->apicid){
-        cprintf("mpinit: ncpu=%d apicid=%d\n", ncpu, proc->apicid);
-        ismp = 0;
-      }
+      cprintf("mpinit ncpu=%d apicid=%d\n", ncpu, proc->apicid);
       if(proc->flags & MPBOOT)
         bcpu = &cpus[ncpu];
       cpus[ncpu].id = ncpu;
+      cpus[ncpu].apicid = proc->apicid;
       ncpu++;
       p += sizeof(struct mpproc);
       continue;

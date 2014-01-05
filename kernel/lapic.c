@@ -7,6 +7,8 @@
 #include "traps.h"
 #include "mmu.h"
 #include "x86.h"
+#include "param.h"
+#include "proc.h"
 
 // Local APIC registers, divided by 4 for use as uint[] indices.
 #define ID      (0x0020/4)   // ID
@@ -95,9 +97,13 @@ lapicinit(void)
   lapicw(TPR, 0);
 }
 
+// This is only used during secondary processor startup.
+// cpu->id is the fast way to get the cpu number, once the
+// processor is fully started.
 int
 cpunum(void)
 {
+  int n, id;
   // Cannot call cpu when interrupts are enabled:
   // result not guaranteed to last long enough to be used!
   // Would prefer to panic but even printing is chancy here:
@@ -110,8 +116,14 @@ cpunum(void)
         __builtin_return_address(0));
   }
 
-  if(lapic)
-    return lapic[ID]>>24;
+  if(!lapic)
+    return 0;
+
+  id = lapic[ID]>>24;
+  for (n = 0; n < ncpu; n++)
+    if (id == cpus[n].apicid)
+      return n;
+
   return 0;
 }
 

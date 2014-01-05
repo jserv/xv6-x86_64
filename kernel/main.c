@@ -99,7 +99,7 @@ startothers(void)
     *(int**)(code-12) = (void *) v2p(entrypgdir);
 #endif
 
-    lapicstartap(c->id, v2p(code));
+    lapicstartap(c->apicid, v2p(code));
 
     // wait for cpu to finish mpmain()
     while(c->started == 0)
