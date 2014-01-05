@@ -74,13 +74,19 @@ void
 getcallerpcs(void *v, uintp pcs[])
 {
   uintp *ebp;
-  int i;
-  
 #if X64
   asm volatile("mov %%rbp, %0" : "=r" (ebp));  
 #else
   ebp = (uintp*)v - 2;
 #endif
+  getstackpcs(ebp, pcs);
+}
+
+void
+getstackpcs(uintp *ebp, uintp pcs[])
+{
+  int i;
+  
   for(i = 0; i < 10; i++){
     if(ebp == 0 || ebp < (uintp*)KERNBASE || ebp == (uintp*)0xffffffff)
       break;

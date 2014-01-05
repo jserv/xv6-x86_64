@@ -123,6 +123,7 @@ void            swtch(struct context**, struct context*);
 // spinlock.c
 void            acquire(struct spinlock*);
 void            getcallerpcs(void*, uintp*);
+void            getstackpcs(uintp*, uintp*);
 int             holding(struct spinlock*);
 void            initlock(struct spinlock*, char*);
 void            release(struct spinlock*);
