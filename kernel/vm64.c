@@ -38,7 +38,8 @@ __thread struct proc *proc;
 static pde_t *kpml4;
 static pde_t *kpdpt;
 static pde_t *iopgdir;
-extern pde_t *kpgdir;  // for use in scheduler()
+static pde_t *kpgdir0;
+static pde_t *kpgdir1;
 
 void wrmsr(uint msr, uint64 val);
 
@@ -148,23 +149,28 @@ setupkvm(void)
 
 // Allocate one page table for the machine for the kernel address
 // space for scheduler processes.
+//
+// linear map the first 4GB of physical memory starting at 0xFFFFFFFF80000000
 void
 kvmalloc(void)
 {
   int n;
   kpml4 = (pde_t*) kalloc();
   kpdpt = (pde_t*) kalloc();
-  kpgdir = (pde_t*) kalloc();
+  kpgdir0 = (pde_t*) kalloc();
+  kpgdir1 = (pde_t*) kalloc();
   iopgdir = (pde_t*) kalloc();
   memset(kpml4, 0, PGSIZE);
   memset(kpdpt, 0, PGSIZE);
-  memset(kpgdir, 0, PGSIZE);
   memset(iopgdir, 0, PGSIZE);
   kpml4[511] = v2p(kpdpt) | PTE_P | PTE_W;
-  kpdpt[510] = v2p(kpgdir) | PTE_P | PTE_W;
+  kpdpt[511] = v2p(kpgdir1) | PTE_P | PTE_W;
+  kpdpt[510] = v2p(kpgdir0) | PTE_P | PTE_W;
   kpdpt[509] = v2p(iopgdir) | PTE_P | PTE_W;
-  for (n = 0; n < NPDENTRIES; n++)
-    kpgdir[n] = (n << PDXSHIFT) | PTE_PS | PTE_P | PTE_W;
+  for (n = 0; n < NPDENTRIES; n++) {
+    kpgdir0[n] = (n << PDXSHIFT) | PTE_PS | PTE_P | PTE_W;
+    kpgdir1[n] = ((n + 512) << PDXSHIFT) | PTE_PS | PTE_P | PTE_W;
+  }
   for (n = 0; n < 16; n++)
     iopgdir[n] = (DEVSPACE + (n << PDXSHIFT)) | PTE_PS | PTE_P | PTE_W | PTE_PWT | PTE_PCD;
   switchkvm();
