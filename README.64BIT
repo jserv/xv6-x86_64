@@ -46,12 +46,18 @@ DONE
  * test on real hardware
  * enable SMP and verify it
  * tidy up vm64.c
+ * fix procdump for 64bit mode
+ * figure out how to enumerate CPUs without BIOS MP table
+   * had to implement minimal ACPI table parsing
 
 IN PROGRESS
- * figure out how to enumerate CPUs without BIOS MP table
 
 TODO
- * fix procdump for 64bit mode
+ * detect actual memory size, make PHYSTOP dynamic
+ * handle >2GB ram
+   * will have to move the linear map region below the kernel
+     since we can only map 2GB from the kernel base to end of vram
+ * fix validateint() of usertests for 64bit
 
 THINGS TO FIX LATER / NICE TO HAVE
  * I wish qemu had a "halt-on-exception" mode. Would help early bringup
