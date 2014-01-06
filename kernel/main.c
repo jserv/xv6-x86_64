@@ -20,7 +20,8 @@ main(void)
   uartearlyinit();
   kinit1(end, P2V(4*1024*1024)); // phys page allocator
   kvmalloc();      // kernel page table
-  mpinit();        // collect info about this machine
+  if (acpiinit()) // try to use acpi for machine info
+    mpinit();      // otherwise use bios MP tables
   lapicinit();
   seginit();       // set up segments
   cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
