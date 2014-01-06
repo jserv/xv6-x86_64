@@ -26,6 +26,7 @@ OBJS := \
 	kobj/log.o\
 	kobj/main.o\
 	kobj/mp.o\
+	kobj/acpi.o\
 	kobj/picirq.o\
 	kobj/pipe.o\
 	kobj/proc.o\

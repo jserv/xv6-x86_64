@@ -90,6 +90,9 @@ int             mpbcpu(void);
 void            mpinit(void);
 void            mpstartthem(void);
 
+// apic.c
+int             acpiinit(void);
+
 // picirq.c
 void            picenable(int);
 void            picinit(void);
