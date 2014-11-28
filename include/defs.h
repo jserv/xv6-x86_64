@@ -95,6 +95,9 @@ void            mpstartthem(void);
 // apic.c
 int             acpiinit(void);
 
+// cpuid.c
+void            cpuidinit(void);
+
 // picirq.c
 void            picenable(int);
 void            picinit(void);

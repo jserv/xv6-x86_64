@@ -4,6 +4,8 @@
 #include "stat.h"
 #include "user.h"
 #include "fcntl.h"
+#include "fs.h"
+#include "file.h"
 
 char *argv[] = { "sh", 0 };
 
@@ -12,12 +14,15 @@ main(void)
 {
   int pid, wpid;
 
+
   if(open("console", O_RDWR) < 0){
     mknod("console", 1, 1);
     open("console", O_RDWR);
   }
   dup(0);  // stdout
   dup(0);  // stderr
+
+  mknod("cpuid", CPUID, 1);
 
   for(;;){
     printf(1, "init: starting sh\n");

@@ -15,6 +15,7 @@ OPT ?= -O0
 OBJS := \
 	bio.o \
 	console.o \
+	cpuid.o \
 	exec.o \
 	file.o \
 	fs.o \
