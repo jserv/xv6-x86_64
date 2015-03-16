@@ -20,6 +20,9 @@ struct inode {
   short major;
   short minor;
   short nlink;
+  short ownerid;      // The ID of the user who owns the file.
+  short groupid;      // The ID of the group who owns the file.
+  uint mode;         // The files mode e.g. 0700
   uint size;
   uint addrs[NDIRECT+1];
 };

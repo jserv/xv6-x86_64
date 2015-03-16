@@ -22,7 +22,7 @@ struct superblock {
   uint nlog;         // Number of log blocks
 };
 
-#define NDIRECT 12
+#define NDIRECT 10
 #define NINDIRECT (BSIZE / sizeof(uint))
 #define MAXFILE (NDIRECT + NINDIRECT)
 
@@ -32,6 +32,9 @@ struct dinode {
   short major;          // Major device number (T_DEV only)
   short minor;          // Minor device number (T_DEV only)
   short nlink;          // Number of links to inode in file system
+  short ownerid;        // The ID of the user who owns the file.
+  short groupid;        // The ID of the group who owns the file.
+  uint mode;           // The files mode e.g. 0700
   uint size;            // Size of file (bytes)
   uint addrs[NDIRECT+1];   // Data block addresses
 };
