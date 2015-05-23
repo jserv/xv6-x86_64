@@ -8,6 +8,6 @@ _*
 *.img
 vectors.S
 mkfs
-.gdbinit
+.gdbinit*
 out
 fs

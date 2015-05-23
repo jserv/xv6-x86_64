@@ -1,0 +1,13 @@
+echo + target remote localhost:1234\n
+target remote localhost:1234
+
+echo + symbol-file out/kernel.elf\n
+symbol-file out/kernel.elf
+
+break TO32
+continue
+stepi
+break TO64
+continue
+
+echo + please attach another gdb.\n

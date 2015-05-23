@@ -252,11 +252,16 @@ qemu-nox: fs.img xv6.img
 .gdbinit: tools/gdbinit.tmpl
 	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
 
+.gdbinit64: tools/gdbinit64.tmpl out/kernel.asm out/bootblock.asm
+	cat tools/gdbinit64.tmpl | sed "s/localhost:1234/localhost:$(GDBPORT)/" | sed "s/TO32/$(shell grep 'call\s*\*0x1c' out/bootblock.asm  | cut -f 1 -d: |sed -e 's/^\s*/\*0x/')/" | sed "s/TO64/$(shell grep 'ljmp' -A 1 out/kernel.asm  | grep 'ffffffff80' | cut -f 1 -d: | sed "s/ffffffff80/\*0x/")/" > $@
+
+.gdbinit64-2: tools/gdbinit64-2.tmpl
+	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
+
 qemu-gdb: fs.img xv6.img .gdbinit
 	@echo "*** Now run 'gdb'." 1>&2
 	$(QEMU) -serial mon:stdio $(QEMUOPTS) -S $(QEMUGDB)
 
-qemu-nox-gdb: fs.img xv6.img .gdbinit
+qemu-nox-gdb: fs.img xv6.img .gdbinit .gdbinit64 .gdbinit64-2
 	@echo "*** Now run 'gdb'." 1>&2
 	$(QEMU) -nographic $(QEMUOPTS) -S $(QEMUGDB)
-
