@@ -189,6 +189,7 @@ out/opfs: tools/opfs.c tools/libfs.c
 
 UPROGS := \
 	cat \
+	chmod \
 	echo \
 	forktest \
 	grep \

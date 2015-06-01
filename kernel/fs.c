@@ -211,6 +211,7 @@ iupdate(struct inode *ip)
   dip->minor = ip->minor;
   dip->nlink = ip->nlink;
   dip->size = ip->size;
+  dip->mode = ip->mode;
   memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
   log_write(bp);
   brelse(bp);

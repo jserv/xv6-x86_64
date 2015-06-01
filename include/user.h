@@ -23,6 +23,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);		/* POSIX incompatible */
 int uptime(void);	/* POSIX incompatible */
+int chmod(const char *, int);
 
 // ulib.c
 int stat(const char*, struct stat*);
