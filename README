@@ -1,4 +1,3 @@
-
 This is a port of xv6 to the x86-64 platform (from i386), attempting to
 be as minimally intrusive as possible (beyond some initial reorganization
 of the source code layout and build system).
@@ -11,15 +10,15 @@ The original upstream branch (mirror) was pulled from the git repository
 git://pdos.csail.mit.edu/xv6/xv6.git
 
 The original project homepage is here:
-http://pdos.csail.mit.edu/6.828/2012/xv6.html
+http://pdos.csail.mit.edu/6.828/2014/xv6.html
 
-The PDF books about the rev7 version of xv6 are checked into the books branch
+The PDF books about the rev8 version of xv6 are checked into the books branch
 of this repository for easy access.  They come from the xv6 project's home site.
 
 The original README remains as README.orig -- renamed to avoid misrepresenting
 this working branch and any local changes as the original project and to 
-hopefully avoid people pestering the original authors about bugs I may introduce
-while poking at their code.
+hopefully avoid people pestering the original authors about bugs x86_64 port may
+introduce while poking at their code.
 
 . . .
 
@@ -28,7 +27,7 @@ subdirectories, and arranged so that the build puts intermediate object files
 into kobj/ and uobj/ directories, other intermediates into out/, and the
 filesystem contents into fs/.
 
-The Makefile defaults to building the 32bit version of xv6.  Define the X64
-environment variable to build the 64bit version.
+The Makefile defaults to building the 64bit version of xv6.  Reset the X64
+environment variable to build the 32bit version.
 
-README.64BIT contains notes about the 64bit port.
+README.64bit contains notes about the 64bit port.
