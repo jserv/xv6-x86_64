@@ -54,49 +54,16 @@ FSIMAGE := fs.img
 endif
 
 # Cross-compiling (e.g., on Mac OS X)
-#TOOLPREFIX = i386-jos-elf-
-
-# Using native tools (e.g., on X86 Linux)
-#TOOLPREFIX =
-
-# Try to infer the correct TOOLPREFIX if not set
-ifndef TOOLPREFIX
-TOOLPREFIX := $(shell if i386-jos-elf-objdump -i 2>&1 | grep '^elf32-i386$$' >/dev/null 2>&1; \
-	then echo 'i386-jos-elf-'; \
-	elif objdump -i 2>&1 | grep 'elf32-i386' >/dev/null 2>&1; \
-	then echo ''; \
-	else echo "***" 1>&2; \
-	echo "*** Error: Couldn't find an i386-*-elf version of GCC/binutils." 1>&2; \
-	echo "*** Is the directory with i386-jos-elf-gcc in your PATH?" 1>&2; \
-	echo "*** If your i386-*-elf toolchain is installed with a command" 1>&2; \
-	echo "*** prefix other than 'i386-jos-elf-', set your TOOLPREFIX" 1>&2; \
-	echo "*** environment variable to that prefix and run 'make' again." 1>&2; \
-	echo "*** To turn off this error, run 'gmake TOOLPREFIX= ...'." 1>&2; \
-	echo "***" 1>&2; exit 1; fi)
-endif
+CROSS_COMPILE ?=
 
 # If the makefile can't find QEMU, specify its path here
 QEMU ?= qemu-system-x86_64
 
-# Try to infer the correct QEMU
-ifndef QEMU
-QEMU = $(shell if which qemu > /dev/null; \
-	then echo qemu; exit; \
-	else \
-	qemu=/Applications/Q.app/Contents/MacOS/i386-softmmu.app/Contents/MacOS/i386-softmmu; \
-	if test -x $$qemu; then echo $$qemu; exit; fi; fi; \
-	echo "***" 1>&2; \
-	echo "*** Error: Couldn't find a working QEMU executable." 1>&2; \
-	echo "*** Is the directory containing the qemu binary in your PATH" 1>&2; \
-	echo "*** or have you tried setting the QEMU variable in Makefile?" 1>&2; \
-	echo "***" 1>&2; exit 1)
-endif
-
-CC = $(TOOLPREFIX)gcc
-AS = $(TOOLPREFIX)gas
-LD = $(TOOLPREFIX)ld
-OBJCOPY = $(TOOLPREFIX)objcopy
-OBJDUMP = $(TOOLPREFIX)objdump
+CC = $(CROSS_COMPILE)gcc
+AS = $(CROSS_COMPILE)gas
+LD = $(CROSS_COMPILE)ld
+OBJCOPY = $(CROSS_COMPILE)objcopy
+OBJDUMP = $(CROSS_COMPILE)objdump
 CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -Wall -Werror -MD -fno-omit-frame-pointer
 CFLAGS += -ffreestanding -fno-common -nostdlib -Iinclude -gdwarf-2 $(XFLAGS) $(OPT)
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
