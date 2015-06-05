@@ -63,6 +63,8 @@ fetcharg(int n)
   case 4: return proc->tf->r8;
   case 5: return proc->tf->r9;
   }
+  /* FIXME: should not reach here */
+  return 0;
 }
 
 int

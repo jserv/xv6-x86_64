@@ -61,11 +61,6 @@ static void tss_set_rsp(uint *tss, uint n, uint64 rsp) {
   tss[n*2 + 2] = rsp >> 32;
 }
 
-static void tss_set_ist(uint *tss, uint n, uint64 ist) {
-  tss[n*2 + 7] = ist;
-  tss[n*2 + 8] = ist >> 32;
-}
-
 extern void* vectors[];
 
 // Set up CPU's kernel segment descriptors.

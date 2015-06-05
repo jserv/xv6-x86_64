@@ -64,8 +64,24 @@ mpmain(void)
   scheduler();     // start running processes
 }
 
-pde_t entrypgdir[];  // For entry.S
+#if X64
+pde_t *entrypgdir;  // For entry.S
 void entry32mp(void);
+
+#else
+
+// Boot page table used in entry.S and entryother.S.
+// Page directories (and page tables), must start on a page boundary,
+// hence the "__aligned__" attribute.
+// Use PTE_PS in page directory entry to enable 4Mbyte pages.
+__attribute__((__aligned__(PGSIZE)))
+pde_t entrypgdir[NPDENTRIES] = {
+  // Map VA's [0, 4MB) to PA's [0, 4MB)
+  [0] = (0) | PTE_P | PTE_W | PTE_PS,
+  // Map VA's [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)
+  [KERNBASE>>PDXSHIFT] = (0) | PTE_P | PTE_W | PTE_PS,
+};
+#endif /* X64 */
 
 // Start the non-boot (AP) processors.
 static void
@@ -107,20 +123,6 @@ startothers(void)
       ;
   }
 }
-
-#ifndef X64
-// Boot page table used in entry.S and entryother.S.
-// Page directories (and page tables), must start on a page boundary,
-// hence the "__aligned__" attribute.  
-// Use PTE_PS in page directory entry to enable 4Mbyte pages.
-__attribute__((__aligned__(PGSIZE)))
-pde_t entrypgdir[NPDENTRIES] = {
-  // Map VA's [0, 4MB) to PA's [0, 4MB)
-  [0] = (0) | PTE_P | PTE_W | PTE_PS,
-  // Map VA's [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)
-  [KERNBASE>>PDXSHIFT] = (0) | PTE_P | PTE_W | PTE_PS,
-};
-#endif
 
 //PAGEBREAK!
 // Blank page.

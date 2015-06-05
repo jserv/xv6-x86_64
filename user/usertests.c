@@ -1451,7 +1451,7 @@ sbrktest(void)
   // can one grow address space to something big?
 #define BIG (100*1024*1024)
   a = sbrk(0);
-  amt = (BIG) - (uint)a;
+  amt = (BIG) - (uint)(uintp)a;
   p = sbrk(amt);
   if (p != a) { 
     printf(stdout, "sbrk test failed to grow big address space; enough phys mem?\n");
@@ -1518,7 +1518,7 @@ sbrktest(void)
   for(i = 0; i < sizeof(pids)/sizeof(pids[0]); i++){
     if((pids[i] = fork()) == 0){
       // allocate a lot of memory
-      sbrk(BIG - (uint)sbrk(0));
+      sbrk(BIG - (uint)(uintp)sbrk(0));
       write(fds[1], "x", 1);
       // sit around until killed
       for(;;) sleep(1000);
@@ -1549,8 +1549,8 @@ sbrktest(void)
 void
 validateint(int *p)
 {
-  int res;
 #ifndef X64
+  int res;
   asm("mov %%esp, %%ebx\n\t"
       "mov %3, %%esp\n\t"
       "int %2\n\t"
@@ -1573,7 +1573,7 @@ validatetest(void)
   for(p = 0; p <= (uint)hi; p += 4096){
     if((pid = fork()) == 0){
       // try to crash the kernel by passing in a badly placed integer
-      validateint((int*)p);
+      validateint((int*)(uintp)p);
       exit();
     }
     sleep(0);
@@ -1582,7 +1582,7 @@ validatetest(void)
     wait();
 
     // try to crash the kernel by passing in a bad string pointer
-    if(link("nosuchfile", (char*)p) != -1){
+    if(link("nosuchfile", (char*)(uintp)p) != -1){
       printf(stdout, "link should not succeed\n");
       exit();
     }
