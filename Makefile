@@ -1,5 +1,7 @@
 -include local.mk
 
+X64 = 1
+
 ifneq ("$(X64)","")
 BITS = 64
 XOBJS = kobj/vm64.o
