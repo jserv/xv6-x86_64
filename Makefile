@@ -2,7 +2,7 @@ X64 = 1
 
 ifneq ("$(X64)","")
 BITS = 64
-XOBJS = .kobj/vm64.o
+XOBJS = vm64.o
 XFLAGS = -m64 -DX64 -mcmodel=kernel -mtls-direct-seg-refs -mno-red-zone
 LDFLAGS = -m elf_x86_64 -nodefaultlibs
 else
@@ -13,43 +13,46 @@ endif
 OPT ?= -O0
 
 OBJS := \
-	.kobj/bio.o \
-	.kobj/console.o \
-	.kobj/exec.o \
-	.kobj/file.o \
-	.kobj/fs.o \
-	.kobj/ide.o \
-	.kobj/ioapic.o \
-	.kobj/kalloc.o \
-	.kobj/kbd.o \
-	.kobj/lapic.o \
-	.kobj/log.o \
-	.kobj/main.o \
-	.kobj/mp.o \
-	.kobj/acpi.o \
-	.kobj/picirq.o \
-	.kobj/pipe.o \
-	.kobj/proc.o \
-	.kobj/spinlock.o \
-	.kobj/string.o \
-	.kobj/swtch$(BITS).o \
-	.kobj/syscall.o \
-	.kobj/sysfile.o \
-	.kobj/sysproc.o \
-	.kobj/timer.o \
-	.kobj/trapasm$(BITS).o \
-	.kobj/trap.o \
-	.kobj/uart.o \
-	.kobj/vectors.o \
-	.kobj/vm.o \
+	bio.o \
+	console.o \
+	exec.o \
+	file.o \
+	fs.o \
+	ide.o \
+	ioapic.o \
+	kalloc.o \
+	kbd.o \
+	lapic.o \
+	log.o \
+	main.o \
+	mp.o \
+	acpi.o \
+	picirq.o \
+	pipe.o \
+	proc.o \
+	spinlock.o \
+	string.o \
+	swtch$(BITS).o \
+	syscall.o \
+	sysfile.o \
+	sysproc.o \
+	timer.o \
+	trapasm$(BITS).o \
+	trap.o \
+	uart.o \
+	vectors.o \
+	vm.o \
 	$(XOBJS)
 
 ifneq ("$(MEMFS)","")
 # build filesystem image in to kernel and use memory-ide-device
 # instead of mounting the filesystem on ide1
-OBJS := $(filter-out .kobj/ide.o,$(OBJS)) .kobj/memide.o
+OBJS := $(filter-out ide.o,$(OBJS)) memide.o
 FSIMAGE := fs.img
 endif
+
+KOBJ_DIR = .kobj
+OBJS := $(addprefix $(KOBJ_DIR)/,$(OBJS))
 
 # Cross-compiling (e.g., on Mac OS X)
 CROSS_COMPILE ?=
@@ -79,25 +82,26 @@ xv6memfs.img: out/bootblock out/kernelmemfs.elf
 	dd if=out/kernelmemfs.elf of=xv6memfs.img seek=1 conv=notrunc
 
 # kernel object files
-.kobj/%.o: kernel/%.c
-	@mkdir -p .kobj
+$(KOBJ_DIR)/%.o: kernel/%.c
+	@mkdir -p $(KOBJ_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-.kobj/%.o: kernel/%.S
-	@mkdir -p .kobj
+$(KOBJ_DIR)/%.o: kernel/%.S
+	@mkdir -p $(KOBJ_DIR)
 	$(CC) $(ASFLAGS) -c -o $@ $<
 
+UOBJ_DIR = .uobj
 # userspace object files
-.uobj/%.o: user/%.c
-	@mkdir -p .uobj
+$(UOBJ_DIR)/%.o: user/%.c
+	@mkdir -p $(UOBJ_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-.uobj/%.o: ulib/%.c
-	@mkdir -p .uobj
+$(UOBJ_DIR)/%.o: ulib/%.c
+	@mkdir -p $(UOBJ_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-.uobj/%.o: ulib/%.S
-	@mkdir -p .uobj
+$(UOBJ_DIR)/%.o: ulib/%.S
+	@mkdir -p $(UOBJ_DIR)
 	$(CC) $(ASFLAGS) -c -o $@ $<
 
 out/bootblock: kernel/bootasm.S kernel/bootmain.c
@@ -124,7 +128,7 @@ out/initcode: $(INITCODESRC)
 	$(OBJCOPY) -S -O binary out/initcode.out out/initcode
 	$(OBJDUMP) -S out/initcode.o > out/initcode.asm
 
-ENTRYCODE = .kobj/entry$(BITS).o
+ENTRYCODE = $(KOBJ_DIR)/entry$(BITS).o
 LINKSCRIPT = kernel/kernel$(BITS).ld
 out/kernel.elf: $(OBJS) $(ENTRYCODE) out/entryother out/initcode $(LINKSCRIPT) $(FSIMAGE)
 	$(LD) $(LDFLAGS) -T $(LINKSCRIPT) -o out/kernel.elf $(ENTRYCODE) $(OBJS) -b binary out/initcode out/entryother $(FSIMAGE)
@@ -135,20 +139,31 @@ MKVECTORS = tools/vectors$(BITS).pl
 kernel/vectors.S: $(MKVECTORS)
 	perl $(MKVECTORS) > kernel/vectors.S
 
-ULIB = .uobj/ulib.o .uobj/usys.o .uobj/printf.o .uobj/umalloc.o
+ULIB := \
+	ulib.o \
+	usys.o \
+	printf.o \
+	umalloc.o
 
-.fs/%: .uobj/%.o $(ULIB)
-	@mkdir -p .fs out
+ULIB := $(addprefix $(UOBJ_DIR)/,$(ULIB))
+
+FS_DIR = .fs
+
+$(FS_DIR)/%: $(UOBJ_DIR)/%.o $(ULIB)
+	@mkdir -p $(FS_DIR) out
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
 	$(OBJDUMP) -S $@ > out/$*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > out/$*.sym
 
-.fs/forktest: .uobj/forktest.o $(ULIB)
-	@mkdir -p .fs
+$(FS_DIR)/forktest: $(UOBJ_DIR)/forktest.o $(ULIB)
+	@mkdir -p $(FS_DIR)
 	# forktest has less library code linked in - needs to be small
 	# in order to be able to max out the proc table.
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o .fs/forktest .uobj/forktest.o .uobj/ulib.o .uobj/usys.o
-	$(OBJDUMP) -S .fs/forktest > out/forktest.asm
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $(FS_DIR)/forktest \
+		$(UOBJ_DIR)/forktest.o \
+		$(UOBJ_DIR)/ulib.o \
+		$(UOBJ_DIR)/usys.o
+	$(OBJDUMP) -S $(FS_DIR)/forktest > out/forktest.asm
 
 out/mkfs: tools/mkfs.c include/fs.h
 	gcc -Werror -Wall -o out/mkfs tools/mkfs.c
@@ -157,28 +172,30 @@ out/mkfs: tools/mkfs.c include/fs.h
 # that disk image changes after first build are persistent until clean.  More
 # details:
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
-.PRECIOUS: .uobj/%.o
+.PRECIOUS: $(UOBJ_DIR)/%.o
 
-UPROGS = \
-	.fs/cat \
-	.fs/echo \
-	.fs/forktest \
-	.fs/grep \
-	.fs/init \
-	.fs/kill \
-	.fs/ln \
-	.fs/ls \
-	.fs/mkdir \
-	.fs/rm \
-	.fs/sh \
-	.fs/stressfs \
-	.fs/usertests \
-	.fs/wc \
-	.fs/zombie
+UPROGS := \
+	cat \
+	echo \
+	forktest \
+	grep \
+	init \
+	kill \
+	ln \
+	ls \
+	mkdir \
+	rm \
+	sh \
+	stressfs \
+	usertests \
+	wc \
+	zombie
 
-.fs/README: README
+UPROGS := $(addprefix $(FS_DIR)/,$(UPROGS))
+
+$(FS_DIR)/README: README
 	@mkdir -p fs
-	cp -f README .fs/README
+	cp -f README $(FS_DIR)/README
 
 fs.img: out/mkfs README $(UPROGS)
 	out/mkfs fs.img README $(UPROGS)
@@ -186,7 +203,7 @@ fs.img: out/mkfs README $(UPROGS)
 -include */*.d
 
 clean: 
-	rm -rf out .fs .uobj .kobj
+	rm -rf out $(FS_DIR) $(UOBJ_DIR) $(KOBJ_DIR)
 	rm -f kernel/vectors.S xv6.img xv6memfs.img fs.img .gdbinit
 
 # run in emulators
