@@ -1,6 +1,10 @@
+The xv6 x86_86 port is:
+Copyright (c) 2015 Jim Huang
+Copyright (c) 2013-2014 Brian Swetland
+
 The xv6 software is:
 
-Copyright (c) 2006-2009 Frans Kaashoek, Robert Morris, Russ Cox,
+Copyright (c) 2006-2014 Frans Kaashoek, Robert Morris, Russ Cox,
                         Massachusetts Institute of Technology
 
 Permission is hereby granted, free of charge, to any person obtaining
