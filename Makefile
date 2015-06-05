@@ -168,6 +168,9 @@ $(FS_DIR)/forktest: $(UOBJ_DIR)/forktest.o $(ULIB)
 out/mkfs: tools/mkfs.c include/fs.h
 	gcc -Werror -Wall -o out/mkfs tools/mkfs.c
 
+out/opfs: tools/opfs.c tools/libfs.c
+	gcc -Werror -Wall -std=c99 -pedantic -o $@ $^
+
 # Prevent deletion of intermediate files, e.g. cat.o, after first build, so
 # that disk image changes after first build are persistent until clean.  More
 # details:
