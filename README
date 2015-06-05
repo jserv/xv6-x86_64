@@ -24,7 +24,7 @@ introduce while poking at their code.
 
 The code has been organized into kernel/, include/, user/, ulib/, and tools/
 subdirectories, and arranged so that the build puts intermediate object files
-into kobj/ and uobj/ directories, other intermediates into out/, and the
+into .kobj/ and .uobj/ directories, other intermediates into out/, and the
 filesystem contents into fs/.
 
 The Makefile defaults to building the 64bit version of xv6.  Reset the X64

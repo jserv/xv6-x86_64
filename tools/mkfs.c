@@ -123,8 +123,8 @@ main(int argc, char *argv[])
   for(i = 2; i < argc; i++){
     char *name = argv[i];
 
-    if (!strncmp(name, "fs/", 3))
-      name += 3;
+    if (!strncmp(name, ".fs/", 4))
+      name += 4;
 
     assert(index(name, '/') == 0);
 

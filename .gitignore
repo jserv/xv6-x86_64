@@ -10,4 +10,4 @@ vectors.S
 mkfs
 .gdbinit*
 out
-fs
+.fs
