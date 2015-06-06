@@ -10,6 +10,8 @@ XFLAGS = -m32
 LDFLAGS = -m elf_i386 -nodefaultlibs
 endif
 
+HOST_CC ?= gcc
+
 OPT ?= -O0
 
 OBJS := \
@@ -174,10 +176,10 @@ $(FS_DIR)/forktest: $(UOBJ_DIR)/forktest.o $(ULIB)
 	$(OBJDUMP) -S $(FS_DIR)/forktest > out/forktest.asm
 
 out/mkfs: tools/mkfs.c include/fs.h
-	gcc -Werror -Wall -o out/mkfs tools/mkfs.c
+	$(HOST_CC) -Werror -Wall -o out/mkfs tools/mkfs.c
 
 out/opfs: tools/opfs.c tools/libfs.c
-	gcc -Werror -Wall -std=c99 -pedantic -o $@ $^
+	$(HOST_CC) -Werror -Wall -std=c99 -pedantic -o $@ $^
 
 # Prevent deletion of intermediate files, e.g. cat.o, after first build, so
 # that disk image changes after first build are persistent until clean.  More
