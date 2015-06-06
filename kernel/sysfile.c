@@ -441,7 +441,9 @@ sys_pipe(void)
   return 0;
 }
 
-int sys_chmod(void) {
+int
+sys_chmod(void)
+{
     char *path;
     int mode;
     struct inode *ip;
