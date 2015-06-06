@@ -85,6 +85,7 @@ arguintp(int n, uintp *ip)
 int
 argint(int n, int *ip)
 {
+  // +4 because esp points to the end of the user stack pointer
   return fetchint(proc->tf->esp + 4 + 4*n, ip);
 }
 

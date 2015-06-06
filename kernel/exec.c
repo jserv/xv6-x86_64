@@ -55,6 +55,8 @@ exec(char *path, char **argv)
 
   // Allocate two pages at the next page boundary.
   // Make the first inaccessible.  Use the second as the user stack.
+  // The first page is used as a guarded page to limit the stack's memory to one page
+  // As the first page isn't used and thus accessing it would cause an exception.
   sz = PGROUNDUP(sz);
   if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0)
     goto bad;

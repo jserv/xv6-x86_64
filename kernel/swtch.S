@@ -7,7 +7,9 @@
 
 .globl swtch
 swtch:
+  # old
   movl 4(%esp), %eax
+  # new
   movl 8(%esp), %edx
 
   # Save old callee-save registers

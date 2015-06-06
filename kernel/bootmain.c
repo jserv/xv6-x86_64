@@ -59,6 +59,7 @@ found_it:
     (hdr->load_end_addr - hdr->load_addr),
     (n * 4) - (hdr->header_addr - hdr->load_addr));
 
+  // If too much RAM was allocated, then zero redundant RAM
   if (hdr->bss_end_addr > hdr->load_end_addr)
     stosb((void*) hdr->load_end_addr, 0,
       hdr->bss_end_addr - hdr->load_end_addr);
