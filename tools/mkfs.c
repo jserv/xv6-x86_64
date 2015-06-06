@@ -11,7 +11,9 @@
 #include "../include/stat.h"
 #include "../include/param.h"
 
+#if __GNUC__ < 5 || !defined __USE_ISOC11
 #define static_assert(a, b) do { switch (0) case 0: case (a): ; } while (0)
+#endif
 
 #define NINODES 200
 
@@ -70,7 +72,6 @@ main(int argc, char *argv[])
   struct dirent de;
   char buf[BSIZE];
   struct dinode din;
-
 
   static_assert(sizeof(int) == 4, "Integers must be 4 bytes!");
 
