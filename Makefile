@@ -66,10 +66,17 @@ AS = $(CROSS_COMPILE)gas
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
+
+# cc-option
+# Usage: OP_CFLAGS+=$(call cc-option, -falign-functions=0, -malign-functions=0)
+cc-option = $(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null \
+	> /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi ;)
+
 CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -Wall -Werror
 CFLAGS += -g -Wall -MD -fno-omit-frame-pointer
 CFLAGS += -ffreestanding -fno-common -nostdlib -Iinclude -gdwarf-2 $(XFLAGS) $(OPT)
-CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
+CFLAGS += $(call cc-option, -fno-stack-protector, "")
+CFLAGS += $(call cc-option, -fno-stack-protector-all, "")
 ASFLAGS = -gdwarf-2 -Wa,-divide -Iinclude $(XFLAGS)
 
 xv6.img: out/bootblock out/kernel.elf fs.img
