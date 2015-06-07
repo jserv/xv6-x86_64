@@ -1,8 +1,3 @@
-bochs 2.2.6:
-./configure --enable-smp --enable-disasm --enable-debugger --enable-all-optimizations --enable-4meg-pages --enable-global-pages --enable-pae --disable-reset-on-triple-fault
-bochs CVS after 2.2.6:
-./configure --enable-smp --enable-disasm --enable-debugger --enable-all-optimizations --enable-4meg-pages --enable-global-pages --enable-pae 
-
 bootmain.c doesn't work right if the ELF sections aren't
 sector-aligned. so you can't use ld -N. and the sections may also need
 to be non-zero length, only really matters for tiny "kernels".
@@ -120,4 +115,4 @@ echo foo > bar should truncate bar
 
 make it work on a real machine
 release before acquire at end of sleep?
-check 2nd disk (i.e. if not in .bochsrc)
+check 2nd disk
