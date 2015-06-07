@@ -131,7 +131,7 @@ $(OUT)/bootblock: kernel/bootasm.S kernel/bootmain.c
 	@mkdir -p $(OUT)
 	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -Iinclude -Os -o $(OUT)/bootmain.o -c kernel/bootmain.c
 	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -Iinclude -o $(OUT)/bootasm.o -c kernel/bootasm.S
-	$(LD) -m elf_i386 -nodefaultlibs -N -e start -Ttext 0x7C00 \
+	$(LD) -m elf_i386 -nodefaultlibs --omagic -e start -Ttext 0x7C00 \
 		-o $(OUT)/bootblock.o $(OUT)/bootasm.o $(OUT)/bootmain.o
 	$(OBJDUMP) -S $(OUT)/bootblock.o > $(OUT)/bootblock.asm
 	$(OBJCOPY) -S -O binary -j .text $(OUT)/bootblock.o $(OUT)/bootblock
@@ -140,7 +140,7 @@ $(OUT)/bootblock: kernel/bootasm.S kernel/bootmain.c
 $(OUT)/entryother: kernel/entryother.S
 	@mkdir -p $(OUT)
 	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -o $(OUT)/entryother.o -c kernel/entryother.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7000 -o $(OUT)/bootblockother.o $(OUT)/entryother.o
+	$(LD) $(LDFLAGS) --omagic -e start -Ttext 0x7000 -o $(OUT)/bootblockother.o $(OUT)/entryother.o
 	$(OBJCOPY) -S -O binary -j .text $(OUT)/bootblockother.o $(OUT)/entryother
 	$(OBJDUMP) -S $(OUT)/bootblockother.o > $(OUT)/entryother.asm
 
@@ -148,7 +148,7 @@ INITCODESRC = kernel/initcode$(BITS).S
 $(OUT)/initcode: $(INITCODESRC)
 	@mkdir -p $(OUT)
 	$(CC) $(CFLAGS) -nostdinc -I. -o $(OUT)/initcode.o -c $(INITCODESRC)
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o $(OUT)/initcode.out out/initcode.o
+	$(LD) $(LDFLAGS) --omagic -e start -Ttext 0 -o $(OUT)/initcode.out out/initcode.o
 	$(OBJCOPY) -S -O binary out/initcode.out $(OUT)/initcode
 	$(OBJDUMP) -S $(OUT)/initcode.o > $(OUT)/initcode.asm
 
@@ -175,9 +175,20 @@ ULIB := $(addprefix $(UOBJ_DIR)/,$(ULIB))
 
 FS_DIR = .fs
 
+LDFLAGS_user = $(LDFLAGS)
+
+# use simple contiguous section layout and do not use dynamic linking
+LDFLAGS_user += --omagic # same as "-N"
+
+# where program execution should begin
+LDFLAGS_user += --entry=main
+
+# location in memory where the program will be loaded
+LDFLAGS_user += --section-start=.text=0x0 # same of "-Ttext="
+
 $(FS_DIR)/%: $(UOBJ_DIR)/%.o $(ULIB)
 	@mkdir -p $(FS_DIR) $(OUT)
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
+	$(LD) $(LDFLAGS_user) -o $@ $^
 	$(OBJDUMP) -S $@ > $(OUT)/$*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $(OUT)/$*.sym
 
@@ -185,7 +196,7 @@ $(FS_DIR)/forktest: $(UOBJ_DIR)/forktest.o $(ULIB)
 	@mkdir -p $(FS_DIR)
 	# forktest has less library code linked in - needs to be small
 	# in order to be able to max out the proc table.
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $(FS_DIR)/forktest \
+	$(LD) $(LDFLAGS_user) -o $(FS_DIR)/forktest \
 		$(UOBJ_DIR)/forktest.o \
 		$(UOBJ_DIR)/ulib.o \
 		$(UOBJ_DIR)/usys.o
