@@ -1,3 +1,7 @@
+# Default make target
+.PHONY: all
+all: xv6.img fs.img
+
 X64 = 1
 
 ifneq ("$(X64)","")
@@ -13,6 +17,9 @@ endif
 OUT = out
 
 HOST_CC ?= gcc
+
+# specify OPT to enable optimizations. improves performance, but may make
+# debugging more difficult
 OPT ?= -O0
 
 OBJS := \
@@ -238,18 +245,23 @@ GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 	then echo "-gdb tcp::$(GDBPORT)"; \
 	else echo "-s -p $(GDBPORT)"; fi)
+
+# number of CPUs to emulate in QEMU
 ifndef CPUS
 CPUS := 2
 endif
 QEMUOPTS = -net none -hdb fs.img xv6.img -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
 qemu: fs.img xv6.img
+	@echo Ctrl+a h for help
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
 
 qemu-memfs: xv6memfs.img
+	@echo Ctrl+a h for help
 	$(QEMU) xv6memfs.img -smp $(CPUS)
 
 qemu-nox: fs.img xv6.img
+	@echo Ctrl+a h for help
 	$(QEMU) -nographic $(QEMUOPTS)
 
 .gdbinit: tools/gdbinit.tmpl
@@ -263,8 +275,13 @@ qemu-nox: fs.img xv6.img
 
 qemu-gdb: fs.img xv6.img .gdbinit
 	@echo "*** Now run 'gdb'." 1>&2
+	@echo Ctrl+a h for help
 	$(QEMU) -serial mon:stdio $(QEMUOPTS) -S $(QEMUGDB)
 
 qemu-nox-gdb: fs.img xv6.img .gdbinit .gdbinit64 .gdbinit64-2
 	@echo "*** Now run 'gdb'." 1>&2
+	@echo Ctrl+a h for help
 	$(QEMU) -nographic $(QEMUOPTS) -S $(QEMUGDB)
+
+.DEFAULT:
+	@echo "No rule to make target $@"
