@@ -2,14 +2,6 @@ opfs
 ======
 A simple utility for manipulating xv6 file system images
 
-Installation
-------
-Two header files (types.h and fs.h) in xv6 distribution are required to build this software.
-Specify the xv6 distribution directory as follows.
-
-    cd /path-to-opfs
-    make XV6HOME=/path-to-xv6-
-
 Usage
 ------
 
