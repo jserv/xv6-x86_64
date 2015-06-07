@@ -214,16 +214,16 @@ UPROGS := \
 UPROGS := $(addprefix $(FS_DIR)/,$(UPROGS))
 
 $(FS_DIR)/README: README
-	@mkdir -p fs
+	@mkdir -p $(FS_DIR)
 	cp -f README $(FS_DIR)/README
 
-fs.img: out/mkfs README $(UPROGS)
-	out/mkfs fs.img README $(UPROGS)
+fs.img: $(OUT)/mkfs $(FS_DIR)/README $(UPROGS)
+	$(OUT)/mkfs $@ $(filter-out $(OUT)/mkfs,$^)
 
 -include */*.d
 
 clean: 
-	rm -rf out $(FS_DIR) $(UOBJ_DIR) $(KOBJ_DIR)
+	rm -rf $(OUT) $(FS_DIR) $(UOBJ_DIR) $(KOBJ_DIR)
 	rm -f kernel/vectors.S xv6.img xv6memfs.img fs.img .gdbinit
 
 # run in emulators
