@@ -103,13 +103,17 @@ $(KOBJ_DIR)/%.o: kernel/%.S
 
 UOBJ_DIR = .uobj
 # userspace object files
+
+# FIXME: -O1 and -O2 result in larger user programs, which can not fit mkfs
+CFLAGS_user = $(filter-out -O1 -O2,$(CFLAGS)) -Os
+
 $(UOBJ_DIR)/%.o: user/%.c
 	@mkdir -p $(UOBJ_DIR)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS_user) -c -o $@ $<
 
 $(UOBJ_DIR)/%.o: ulib/%.c
 	@mkdir -p $(UOBJ_DIR)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS_user) -c -o $@ $<
 
 $(UOBJ_DIR)/%.o: ulib/%.S
 	@mkdir -p $(UOBJ_DIR)
