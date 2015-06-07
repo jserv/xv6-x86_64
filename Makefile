@@ -126,9 +126,10 @@ $(UOBJ_DIR)/%.o: ulib/%.S
 	@mkdir -p $(UOBJ_DIR)
 	$(CC) $(ASFLAGS) -c -o $@ $<
 
+# bootblock is optimized for space
 $(OUT)/bootblock: kernel/bootasm.S kernel/bootmain.c
 	@mkdir -p $(OUT)
-	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -Iinclude -O -o $(OUT)/bootmain.o -c kernel/bootmain.c
+	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -Iinclude -Os -o $(OUT)/bootmain.o -c kernel/bootmain.c
 	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -Iinclude -o $(OUT)/bootasm.o -c kernel/bootasm.S
 	$(LD) -m elf_i386 -nodefaultlibs -N -e start -Ttext 0x7C00 \
 		-o $(OUT)/bootblock.o $(OUT)/bootasm.o $(OUT)/bootmain.o
