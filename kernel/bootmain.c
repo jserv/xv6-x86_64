@@ -22,7 +22,7 @@ struct mbheader {
   uint32 entry_addr;
 };
 
-void readseg(uchar*, uint, uint);
+static void readseg(uchar*, uint, uint);
 
 void
 bootmain(void)
@@ -70,7 +70,7 @@ found_it:
   entry();
 }
 
-void
+static void
 waitdisk(void)
 {
   // Wait for disk ready.
@@ -79,7 +79,7 @@ waitdisk(void)
 }
 
 // Read a single sector at offset into dst.
-void
+static void
 readsect(void *dst, uint offset)
 {
   // Issue command.
@@ -98,7 +98,7 @@ readsect(void *dst, uint offset)
 
 // Read 'count' bytes at 'offset' from kernel into physical address 'pa'.
 // Might copy more than asked.
-void
+static void
 readseg(uchar* pa, uint count, uint offset)
 {
   uchar* epa;
