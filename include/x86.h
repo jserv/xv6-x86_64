@@ -137,7 +137,7 @@ xchg(volatile uint *addr, uintp newval)
   // The + in "+m" denotes a read-modify-write operand.
   asm volatile("lock; xchgl %0, %1" :
                "+m" (*addr), "=a" (result) :
-               "1" (newval) :
+               "1" ((uint)newval) :
                "cc");
   return result;
 }
