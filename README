@@ -7,10 +7,12 @@ of the source code layout and build system).
    but is implemented for a modern x86-based multiprocessor using ANSI C."
 
 The original upstream branch (mirror) was pulled from the git repository
-git://pdos.csail.mit.edu/xv6/xv6.git
+https://github.com/mit-pdos/xv6-public
+(previously git://pdos.csail.mit.edu/xv6/xv6.git)
 
 The original project homepage is here:
-http://pdos.csail.mit.edu/6.828/2014/xv6.html
+https://pdos.csail.mit.edu/6.828/2014/xv6.html
+(previously http://pdos.csail.mit.edu/6.828/2012/xv6.html)
 
 The PDF books about the rev8 version of xv6 are checked into the books branch
 of this repository for easy access.  They come from the xv6 project's home site.
