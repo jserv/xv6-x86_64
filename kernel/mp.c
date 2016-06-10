@@ -52,7 +52,7 @@ mpsearch1(uint a, int len)
 // spec is in one of the following three locations:
 // 1) in the first KB of the EBDA;
 // 2) in the last KB of system base memory;
-// 3) in the BIOS ROM between 0xE0000 and 0xFFFFF.
+// 3) in the BIOS ROM address space between 0F0000h and 0FFFFFh.
 static struct mp*
 mpsearch(void)
 {
