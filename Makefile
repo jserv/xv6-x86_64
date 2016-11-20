@@ -14,6 +14,9 @@ XFLAGS = -m32
 LDFLAGS = -m elf_i386 -nodefaultlibs
 endif
 
+# Turn off PIE which is no default on ubuntu
+XFLAGS += -fno-pie
+
 OUT = out
 
 HOST_CC ?= gcc
