@@ -8,10 +8,10 @@ ifneq ("$(X64)","")
 BITS = 64
 XOBJS = vm64.o
 XFLAGS = -m64 -DX64 -mcmodel=kernel -mtls-direct-seg-refs -mno-red-zone
-LDFLAGS = -m elf_x86_64 -nodefaultlibs
+LDFLAGS = -m elf_x86_64 -z nodefaultlib
 else
 XFLAGS = -m32
-LDFLAGS = -m elf_i386 -nodefaultlibs
+LDFLAGS = -m elf_i386 -z nodefaultlib
 endif
 
 # Turn off PIE which is no default on ubuntu
@@ -134,7 +134,7 @@ $(OUT)/bootblock: kernel/bootasm.S kernel/bootmain.c
 	@mkdir -p $(OUT)
 	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -Iinclude -Os -o $(OUT)/bootmain.o -c kernel/bootmain.c
 	$(CC) -fno-builtin -fno-pic -m32 -nostdinc -Iinclude -o $(OUT)/bootasm.o -c kernel/bootasm.S
-	$(LD) -m elf_i386 -nodefaultlibs --omagic -e start -Ttext 0x7C00 \
+	$(LD) -m elf_i386 -z nodefaultlib --omagic -e start -Ttext 0x7C00 \
 		-o $(OUT)/bootblock.o $(OUT)/bootasm.o $(OUT)/bootmain.o
 	$(OBJDUMP) -S $(OUT)/bootblock.o > $(OUT)/bootblock.asm
 	$(OBJCOPY) -S -O binary -j .text $(OUT)/bootblock.o $(OUT)/bootblock
